@@ -1,16 +1,27 @@
 class CajaRegistradora {
   constructor(inventario) {
-    this.inventario = inventario.map((item) => ({
-      ...item,
-      stock: Number(item.stock),
-      precioBase: Number(item.precioBase),
-    }));
+    this.inventario = [];
+    for (let i = 0; i < inventario.length; i++) {
+      this.inventario[i] = {
+        id: inventario[i].id,
+        modelo: inventario[i].modelo,
+        precioBase: Number(inventario[i].precioBase),
+        stock: Number(inventario[i].stock)
+      };
+    }
   }
 
   realizarVenta(modelo, cantidad, tieneMembresia) {
-    const producto = this.inventario.find((item) => item.modelo === modelo);
+    let producto = null;
 
-    if (!producto) {
+    for (let i = 0; i < this.inventario.length; i++) {
+      if (this.inventario[i].modelo === modelo) {
+        producto = this.inventario[i];
+        break;
+      }
+    }
+
+    if (producto === null) {
       return `El modelo "${modelo}" no existe en el inventario.`;
     }
 
@@ -18,31 +29,37 @@ class CajaRegistradora {
       return `Stock insuficiente para ${modelo}`;
     }
 
-    producto.stock -= cantidad;
+    producto.stock = producto.stock - cantidad;
 
     const subtotalSinDescuento = producto.precioBase * cantidad;
-    const subtotal = tieneMembresia === true
-      ? subtotalSinDescuento * 0.85
-      : subtotalSinDescuento;
+    let subtotal;
+
+    if (tieneMembresia === true) {
+      subtotal = subtotalSinDescuento * 0.85;
+    } else {
+      subtotal = subtotalSinDescuento;
+    }
 
     const iva = subtotal * 0.16;
     const totalPagar = subtotal + iva;
 
     return {
-      modelo,
-      cantidad,
-      subtotal,
-      iva,
-      totalPagar,
+      modelo: modelo,
+      cantidad: cantidad,
+      subtotal: subtotal,
+      iva: iva,
+      totalPagar: totalPagar
     };
   }
 
   obtenerValorTotalAlmacen() {
     let total = 0;
+
     for (let i = 0; i < this.inventario.length; i++) {
       const item = this.inventario[i];
       total = total + (item.precioBase * item.stock);
     }
+
     return total;
   }
 }
